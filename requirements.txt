@@ -5,3 +5,4 @@ openai
 pymongo[srv]
 requests
 python-dotenv
+certifi

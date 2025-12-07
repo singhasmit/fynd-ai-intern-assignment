@@ -1,5 +1,6 @@
 import json
 import os
+import certifi
 from datetime import datetime
 from pymongo import MongoClient
 
@@ -13,8 +14,7 @@ DATA_PATH = "data/submissions.json"
 
 
 def _get_mongo_collection():
-    """Return a MongoDB collection object if MONGO_URI is configured,
-    otherwise return None (we'll fall back to local JSON)."""
+   
 
     # 1) Local dev: env var
     uri = os.getenv("MONGO_URI")
@@ -32,7 +32,13 @@ def _get_mongo_collection():
         return None
 
     try:
-        client = MongoClient(uri)
+        client = MongoClient(
+            uri,
+            tls=True,
+            tlsCAFile=certifi.where(),          # <-- IMPORTANT FIX
+            serverSelectionTimeoutMS=30000      # wait 30 seconds for SSL/TLS
+        )
+
         db = client["fynd_reviews"]
         return db["submissions"]
     except Exception as e:

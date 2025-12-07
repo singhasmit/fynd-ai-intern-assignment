@@ -1,39 +1,37 @@
-import json
-import os
 from datetime import datetime
+from pymongo import MongoClient
+import os
 
-DATA_PATH = "data/submissions.json"
+# ----------- MONGO SETUP -------------
 
+MONGO_URI = "mongodb+srv://fynduser:Fynduser12345@cluster0.ba8j22x.mongodb.net/?appName=Cluster0"#os.getenv("MONGO_URI")
+
+if not MONGO_URI:
+    raise ValueError("MONGO_URI environment variable not set!")
+
+client = MongoClient(MONGO_URI)
+db = client["fynd_reviews"]          # database name
+collection = db["submissions"]       # collection name
+
+
+# ----------- SAVE SUBMISSION ----------
+def save_submission(submission: dict):
+    collection.insert_one(submission)
+
+
+# ----------- LOAD SUBMISSIONS ----------
 def load_data():
-    
-    if not os.path.exists("data"):   #checking that data folder exists, if not making a new one
-        os.makedirs("data")
-
-    if not os.path.exists(DATA_PATH): #checking if json file exists , if not taking an empty list and saving the list
-        with open(DATA_PATH, "w") as f:
-            json.dump([], f)
-
-    with open(DATA_PATH, "r") as f:    #loading the data
-        return json.load(f)
+    all_docs = list(collection.find({}, {"_id": 0}))  # remove Mongo _id
+    return all_docs
 
 
-def save_submission(submission):
-    data = load_data()
-
-    data.append(submission)
-
-    with open (DATA_PATH, "w") as f:
-        json.dump(data, f , indent=2)
-
-
-def create_submission(rating , review , ai_response , ai_summary, ai_action):
-    return{
-        "timestamp": datetime.now().isoformat(timespec='seconds'),
+# ----------- CREATE SUBMISSION ----------
+def create_submission(rating, review, ai_response, ai_summary, ai_action):
+    return {
+        "timestamp": datetime.now().isoformat(timespec="seconds"),
         "rating": rating,
         "review": review,
         "ai_response": ai_response,
         "ai_summary": ai_summary,
         "ai_action": ai_action,
     }
-
-

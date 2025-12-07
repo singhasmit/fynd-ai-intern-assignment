@@ -15,7 +15,7 @@ def _get_api_key():
     1) Environment variable
     2) Streamlit secrets (when deployed)
     """
-    key = os.getenv("GEMINI_API_KEY")
+    key = "AIzaSyBI7XgSqPw-QqRJWh8UGfjwPcMqdsbeC5w"#os.getenv("GEMINI_API_KEY")
 
     if not key and st is not None:
         # Will work on Streamlit Cloud when you set secrets

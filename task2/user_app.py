@@ -43,5 +43,5 @@ if st.button("submit review"):  #if button is clicked then this block gets execu
 
        #showing success message after submission is successful
         st.success("Your review has been submitted!")
-        st.subheader("AI Response (placeholder)")
+        st.subheader("AI Response")
         st.write(ai_response)

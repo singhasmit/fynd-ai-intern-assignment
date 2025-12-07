@@ -2,36 +2,29 @@ from datetime import datetime
 from pymongo import MongoClient
 import os
 
-# ----------- MONGO SETUP -------------
+# Try to import streamlit (only available in the apps, not in plain scripts)
+try:
+    import streamlit as st
+except ImportError:
+    st = None
 
-MONGO_URI = "mongodb+srv://fynduser:Fynduser12345@cluster0.ba8j22x.mongodb.net/?appName=Cluster0"#os.getenv("MONGO_URI")
 
-if not MONGO_URI:
-    raise ValueError("MONGO_URI environment variable not set!")
+def get_mongo_uri():
+    # 1) Try environment variable (local dev)
+    uri = os.getenv("MONGO_URI")
+
+    # 2) If not set, try Streamlit secrets (Streamlit Cloud)
+    if not uri and st is not None:
+        uri = st.secrets.get("MONGO_URI")
+
+    if not uri:
+        raise ValueError("MONGO_URI not found in env vars or Streamlit secrets.")
+
+    return uri
+
+
+MONGO_URI = get_mongo_uri()
 
 client = MongoClient(MONGO_URI)
-db = client["fynd_reviews"]          # database name
-collection = db["submissions"]       # collection name
-
-
-# ----------- SAVE SUBMISSION ----------
-def save_submission(submission: dict):
-    collection.insert_one(submission)
-
-
-# ----------- LOAD SUBMISSIONS ----------
-def load_data():
-    all_docs = list(collection.find({}, {"_id": 0}))  # remove Mongo _id
-    return all_docs
-
-
-# ----------- CREATE SUBMISSION ----------
-def create_submission(rating, review, ai_response, ai_summary, ai_action):
-    return {
-        "timestamp": datetime.now().isoformat(timespec="seconds"),
-        "rating": rating,
-        "review": review,
-        "ai_response": ai_response,
-        "ai_summary": ai_summary,
-        "ai_action": ai_action,
-    }
+db = client["fynd_reviews"]
+collection = db["submissions"]
